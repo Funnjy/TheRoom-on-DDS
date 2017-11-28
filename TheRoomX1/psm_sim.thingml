@@ -242,6 +242,7 @@ thing OnOffSet includes PSM_Msg, GeneralMsg, OnOffMsg{
 			transition -> Idle
 			event swon: require_val?SwitchOn
 			action do
+			//As an option, DDS function can be implemented here.
 				did=swon.did
 				i=0
 				found = false
