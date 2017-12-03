@@ -1,0 +1,5 @@
+struct temp_message{
+	long id;
+	string<128> txt;
+	double temperature;
+}; 
