@@ -3,3 +3,8 @@ struct temp_message{
 	string<128> txt;
 	double temperature;
 }; 
+
+struct temp_message2{
+	long id2;
+	string<128> name;
+};
