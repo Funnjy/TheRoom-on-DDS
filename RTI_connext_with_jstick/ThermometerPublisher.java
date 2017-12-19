@@ -52,6 +52,7 @@ java -Djava.ext.dirs=$NDDSHOME/lib/java ThermometerSubscriber <domain_id>
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.rti.dds.domain.*;
@@ -61,6 +62,8 @@ import com.rti.dds.topic.*;
 import com.rti.ndds.config.*;
 
 import net.jstick.api.Tellstick;
+import net.jstick.api.Device;
+import net.jstick.api.Sensor;
 import sun.security.jca.GetInstance.Instance;
 
 // ===========================================================================
@@ -190,24 +193,31 @@ public class ThermometerPublisher {
             
             //Initialize tellstick object 
             Tellstick ts = new Tellstick(true);
+            ArrayList<Sensor> sensorList = ts.getSensors();
             
             //Get number of devices which are observed by tellstick
     		int intNumberOfDevices = ts.getNumberOfDevices();
-
+    		    		
             for (int count = 0; (sampleCount == 0) || (count < sampleCount); ++count) {
                 System.out.println("Writing Thermometer, count " + count);
-                int i=0;
+                
+                for(Sensor s: (ArrayList<Sensor>) sensorList){
+                	instance.did = s.getId();
+                	instance.proto = s.getProtocol();
+                	instance.model = s.getModel();
+                }
+                
+                //int i=0;
                 /* Modify the instance to be written here */
-                	instance.did = ts.getDeviceId( i );
+                	/*instance.did = ts.getId( i );
                 	instance.name = "test_name";
-                	instance.model = "test_model";
-                	instance.proto = "test_proto";
-                	instance.devicetype = "test_devicetype";
+                	instance.model = ts.getModel( i );
+                	instance.proto = ts.getProtocoll( i );
+                	instance.devicetype = ts.getDeviceType( i );
                 	instance.devicemethods = 0001;
                 	instance.devicelastcmd = "test_lastcmd";
-                	instance.devicelastval = 239487123;
+                	instance.devicelastval = 239487123;*/
                 	
-                
                 /* Write data */
                 writer.write(instance, instance_handle);
                 try {
