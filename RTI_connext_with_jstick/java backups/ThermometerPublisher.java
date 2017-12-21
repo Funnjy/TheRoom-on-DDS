@@ -61,8 +61,10 @@ import com.rti.dds.publication.*;
 import com.rti.dds.topic.*;
 import com.rti.ndds.config.*;
 
-import net.jstick.api.Sensor;
 import net.jstick.api.Tellstick;
+import net.jstick.api.Device;
+import net.jstick.api.Sensor;
+import sun.security.jca.GetInstance.Instance;
 
 // ===========================================================================
 
@@ -176,6 +178,7 @@ public class ThermometerPublisher {
 
             // --- Write --- //
 
+            
             /* Create data sample for writing */
             Thermometer instance = new Thermometer();
 
@@ -186,33 +189,46 @@ public class ThermometerPublisher {
             //instance_handle = writer.register_instance(instance);
 
             final long sendPeriodMillis = 4 * 1000; // 4 seconds
+            
+            
+            //Initialize tellstick object 
             Tellstick ts = new Tellstick(true);
             ArrayList<Sensor> sensorList = ts.getSensors();
             
+            //Get number of devices which are observed by tellstick
+    		int intNumberOfDevices = ts.getNumberOfDevices();
+    		int integer = 0;
             for (int count = 0; (sampleCount == 0) || (count < sampleCount); ++count) {
                 System.out.println("Writing Thermometer, count " + count);
                 
-                /* Modify the instance to be written here */
                 for(Sensor s: (ArrayList<Sensor>) sensorList){
-                	System.out.println("Thermo informasjon: " + s.getId() + "; " + s.getTemperature() + "; " + s.getModel());
-                	instance.id = (short) s.getId();
-                	instance.long_data = s.getTemperature();
-                	instance.string_data = s.getModel();
-                	try {
-                        Thread.sleep(sendPeriodMillis);
-                    } catch (InterruptedException ix) {
-                        System.err.println("INTERRUPTED");
-                        break;
-                    }
+                	System.out.println("Thermo informasjon: " + s.getId() + "; " + s.getProtocol() + "; " + s.getModel());
+                	instance.did = s.getId();
+                	instance.proto = s.getProtocol();
+                	instance.model = s.getModel();
+                	instance.devicelastval = integer;
+                	integer++;
                 }
+                
+                //int i=0;
+                /* Modify the instance to be written here */
+                	/*instance.did = ts.getId( i );
+                	instance.name = "test_name";
+                	instance.model = ts.getModel( i );
+                	instance.proto = ts.getProtocoll( i );
+                	instance.devicetype = ts.getDeviceType( i );
+                	instance.devicemethods = 0001;
+                	instance.devicelastcmd = "test_lastcmd";
+                	instance.devicelastval = 239487123;*/
+                	
                 /* Write data */
-               /* writer.write(instance, instance_handle);
+                writer.write(instance, instance_handle);
                 try {
                     Thread.sleep(sendPeriodMillis);
                 } catch (InterruptedException ix) {
                     System.err.println("INTERRUPTED");
                     break;
-                }*/
+                }
             }
 
             //writer.unregister_instance(instance, instance_handle);

@@ -1,10 +1,5 @@
 struct Thermometer {
-	long did;
-	string <128> name;
-	string <128> model;
-	string <128> proto;
-	string <128> devicetype;
-	long devicemethods;
-	string <128> devicelastcmd;
-	long devicelastval;
+	short id; //@key
+	double long_data;
+	string<255> string_data;
 };

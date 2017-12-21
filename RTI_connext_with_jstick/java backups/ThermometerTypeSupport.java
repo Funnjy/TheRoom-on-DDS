@@ -89,7 +89,7 @@ public class ThermometerTypeSupport extends TypeSupportImpl {
     }
 
     public static TypeCode getTypeCode(){
-        return ThermometerTypeCode.VALUE;
+        return null;
     }
 
     public Object create_data() {
@@ -148,9 +148,14 @@ public class ThermometerTypeSupport extends TypeSupportImpl {
             origAlignment = 0;
         } 
 
-        currentAlignment += CdrPrimitiveType.SHORT.getMaxSizeSerialized(currentAlignment );
-        currentAlignment += CdrPrimitiveType.DOUBLE.getMaxSizeSerialized(currentAlignment );
-        currentAlignment += CdrPrimitiveType.getStringMaxSizeSerialized(currentAlignment, (255)+1);
+        currentAlignment += CdrPrimitiveType.INT.getMaxSizeSerialized(currentAlignment );
+        currentAlignment += CdrPrimitiveType.getStringMaxSizeSerialized(currentAlignment, (128)+1);
+        currentAlignment += CdrPrimitiveType.getStringMaxSizeSerialized(currentAlignment, (128)+1);
+        currentAlignment += CdrPrimitiveType.getStringMaxSizeSerialized(currentAlignment, (128)+1);
+        currentAlignment += CdrPrimitiveType.getStringMaxSizeSerialized(currentAlignment, (128)+1);
+        currentAlignment += CdrPrimitiveType.INT.getMaxSizeSerialized(currentAlignment );
+        currentAlignment += CdrPrimitiveType.getStringMaxSizeSerialized(currentAlignment, (128)+1);
+        currentAlignment += CdrPrimitiveType.INT.getMaxSizeSerialized(currentAlignment );
         if (include_encapsulation) {
             currentAlignment += encapsulation_size;
         }
@@ -174,9 +179,14 @@ public class ThermometerTypeSupport extends TypeSupportImpl {
             origAlignment = 0;
         } 
 
-        currentAlignment += CdrPrimitiveType.SHORT.getMaxSizeSerialized(currentAlignment );
-        currentAlignment += CdrPrimitiveType.DOUBLE.getMaxSizeSerialized(currentAlignment );
+        currentAlignment += CdrPrimitiveType.INT.getMaxSizeSerialized(currentAlignment );
         currentAlignment += CdrPrimitiveType.getStringMaxSizeSerialized(currentAlignment, 1);
+        currentAlignment += CdrPrimitiveType.getStringMaxSizeSerialized(currentAlignment, 1);
+        currentAlignment += CdrPrimitiveType.getStringMaxSizeSerialized(currentAlignment, 1);
+        currentAlignment += CdrPrimitiveType.getStringMaxSizeSerialized(currentAlignment, 1);
+        currentAlignment += CdrPrimitiveType.INT.getMaxSizeSerialized(currentAlignment );
+        currentAlignment += CdrPrimitiveType.getStringMaxSizeSerialized(currentAlignment, 1);
+        currentAlignment += CdrPrimitiveType.INT.getMaxSizeSerialized(currentAlignment );
 
         if (include_encapsulation) {
             currentAlignment += encapsulation_size;
@@ -209,11 +219,21 @@ public class ThermometerTypeSupport extends TypeSupportImpl {
             epd.setBaseAlignment(currentAlignment);
         } 
 
-        currentAlignment  +=  CdrPrimitiveType.SHORT.getMaxSizeSerialized(epd.getAlignment(currentAlignment));
+        currentAlignment  +=  CdrPrimitiveType.INT.getMaxSizeSerialized(epd.getAlignment(currentAlignment));
 
-        currentAlignment  +=  CdrPrimitiveType.DOUBLE.getMaxSizeSerialized(epd.getAlignment(currentAlignment));
+        currentAlignment  +=  CdrPrimitiveType.getStringSerializedSize(epd.getAlignment(currentAlignment), typedSrc.name );
 
-        currentAlignment  +=  CdrPrimitiveType.getStringSerializedSize(epd.getAlignment(currentAlignment), typedSrc.string_data );
+        currentAlignment  +=  CdrPrimitiveType.getStringSerializedSize(epd.getAlignment(currentAlignment), typedSrc.model );
+
+        currentAlignment  +=  CdrPrimitiveType.getStringSerializedSize(epd.getAlignment(currentAlignment), typedSrc.proto );
+
+        currentAlignment  +=  CdrPrimitiveType.getStringSerializedSize(epd.getAlignment(currentAlignment), typedSrc.devicetype );
+
+        currentAlignment  +=  CdrPrimitiveType.INT.getMaxSizeSerialized(epd.getAlignment(currentAlignment));
+
+        currentAlignment  +=  CdrPrimitiveType.getStringSerializedSize(epd.getAlignment(currentAlignment), typedSrc.devicelastcmd );
+
+        currentAlignment  +=  CdrPrimitiveType.INT.getMaxSizeSerialized(epd.getAlignment(currentAlignment));
 
         if (include_encapsulation) {
             currentAlignment += encapsulation_size;
@@ -242,7 +262,8 @@ public class ThermometerTypeSupport extends TypeSupportImpl {
             origAlignment = 0;
         } 
 
-        currentAlignment += CdrPrimitiveType.SHORT.getMaxSizeSerialized(currentAlignment );
+        currentAlignment += get_serialized_sample_max_size(
+            endpoint_data,false,encapsulation_id,currentAlignment);
         if (include_encapsulation) {
             currentAlignment += encapsulation_size;
         }
@@ -265,11 +286,21 @@ public class ThermometerTypeSupport extends TypeSupportImpl {
 
             Thermometer typedSrc = (Thermometer) src;
 
-            dst.writeShort(typedSrc.id);
+            dst.writeInt(typedSrc.did);
 
-            dst.writeDouble(typedSrc.long_data);
+            dst.writeString(typedSrc.name,128);
 
-            dst.writeString(typedSrc.string_data,255);
+            dst.writeString(typedSrc.model,128);
+
+            dst.writeString(typedSrc.proto,128);
+
+            dst.writeString(typedSrc.devicetype,128);
+
+            dst.writeInt(typedSrc.devicemethods);
+
+            dst.writeString(typedSrc.devicelastcmd,128);
+
+            dst.writeInt(typedSrc.devicelastval);
         }
 
         if (serialize_encapsulation) {
@@ -305,8 +336,7 @@ public class ThermometerTypeSupport extends TypeSupportImpl {
         if (serialize_key) {
 
             Thermometer typedSrc = (Thermometer) src;    
-
-            dst.writeShort(typedSrc.id);
+            serialize(endpoint_data, src, dst, false, CdrEncapsulation.CDR_ENCAPSULATION_ID_CDR_BE, true, endpoint_plugin_qos);
 
         }
 
@@ -335,9 +365,14 @@ public class ThermometerTypeSupport extends TypeSupportImpl {
             Thermometer typedDst = (Thermometer) dst;
             typedDst.clear();      
             try{
-                typedDst.id = src.readShort();
-                typedDst.long_data = src.readDouble();
-                typedDst.string_data = src.readString(255);
+                typedDst.did = src.readInt();
+                typedDst.name = src.readString(128);
+                typedDst.model = src.readString(128);
+                typedDst.proto = src.readString(128);
+                typedDst.devicetype = src.readString(128);
+                typedDst.devicemethods = src.readInt();
+                typedDst.devicelastcmd = src.readString(128);
+                typedDst.devicelastval = src.readInt();
             } catch (IllegalCdrStateException stateEx) {
                 if (src.available() >= CdrEncapsulation.CDR_ENCAPSULATION_PARAMETER_ID_ALIGNMENT) {
                     throw new RETCODE_ERROR("Error deserializing sample! Remainder: " + src.available() + "\n" +
@@ -363,19 +398,6 @@ public class ThermometerTypeSupport extends TypeSupportImpl {
         super.deserialize_from_cdr_buffer(dst,buffer,length);
     }
 
-    public String data_to_string(
-        Thermometer sample,
-        PrintFormatProperty property) 
-    {
-        return super.data_to_string(sample, property);
-    }
-
-    public String data_to_string(
-        Thermometer sample) 
-    {
-        return super.data_to_string(sample);
-    }
-
     public Object deserialize_key_sample(
         Object endpoint_data,
         Object dst,
@@ -396,7 +418,7 @@ public class ThermometerTypeSupport extends TypeSupportImpl {
 
             Thermometer typedDst = (Thermometer) dst;
 
-            typedDst.id = src.readShort();
+            deserialize_sample(endpoint_data, dst, src, false, true, endpoint_plugin_qos);
 
         }
         if (deserialize_encapsulation) {
@@ -422,11 +444,21 @@ public class ThermometerTypeSupport extends TypeSupportImpl {
 
         if (skip_sample) {
 
-            src.skipShort();
-
-            src.skipDouble();
+            src.skipInt();
 
             src.skipString();
+
+            src.skipString();
+
+            src.skipString();
+
+            src.skipString();
+
+            src.skipInt();
+
+            src.skipString();
+
+            src.skipInt();
 
         }
 
@@ -456,11 +488,9 @@ public class ThermometerTypeSupport extends TypeSupportImpl {
 
             Thermometer typedDst = (Thermometer) sample;
 
-            typedDst.id = src.readShort();
-
-            src.skipDouble();
-
-            src.skipString();
+            deserialize_sample(
+                endpoint_data, sample, src, false,
+                true, endpoint_plugin_qos);
 
         }
 
@@ -469,68 +499,6 @@ public class ThermometerTypeSupport extends TypeSupportImpl {
         }
 
         return sample;
-    }
-
-    /* Fill in the key fields of the given instance sample based on the key.
-    */
-    public void key_to_instance(Object endpoint_data,
-    Object instance,
-    Object key) {
-        Thermometer typedDst
-        = (Thermometer) instance;
-        Thermometer typedSrc
-        = (Thermometer) key;
-        typedDst.id = typedSrc.id;
-
-    }
-
-    /* Fill in the given key based on the key fields of the given instance
-    * sample.
-    */
-    public void instance_to_key(Object endpoint_data,
-    Object key,
-    Object instance) {
-        Thermometer typedDst
-        = (Thermometer)key;
-        Thermometer typedSrc
-        = (Thermometer) instance;
-        typedDst.id = typedSrc.id;
-
-    }
-
-    public void serialized_sample_to_keyhash(
-        Object endpoint_data,
-        CdrInputStream src,
-        KeyHash_t keyhash,
-        boolean include_encapsulation,
-        Object endpoint_plugin_qos)
-    {
-        int position = 0;
-
-        DefaultEndpointData endpointData = (DefaultEndpointData) endpoint_data;
-        Object sample = null;
-
-        sample = endpointData.get_sample();
-
-        if (sample == null) {
-            throw new RETCODE_ERROR("Missing intermediate sample");
-        }
-
-        Thermometer typedDst = (Thermometer) sample;
-
-        if (include_encapsulation) {
-            src.deserializeAndSetCdrEncapsulation();
-
-            position = src.resetAlignment();
-        }
-
-        typedDst.id = src.readShort();
-
-        if (include_encapsulation) {
-            src.restoreAlignment(position);
-        }
-
-        instance_to_keyhash(endpoint_data, keyhash, sample);
     }
 
     // -----------------------------------------------------------------------
@@ -590,13 +558,13 @@ public class ThermometerTypeSupport extends TypeSupportImpl {
         to the constructor below should be true.  Otherwise it should
         be false. */        
 
-        super(TYPE_NAME,true,ThermometerTypeCode.VALUE,Thermometer.class,TypeSupportType.TST_STRUCT, PLUGIN_VERSION);
+        super(TYPE_NAME, false, null ,Thermometer.class,TypeSupportType.TST_STRUCT, PLUGIN_VERSION);
 
     }
 
     protected ThermometerTypeSupport (boolean enableKeySupport) {
 
-        super(TYPE_NAME, enableKeySupport,ThermometerTypeCode.VALUE,Thermometer.class,TypeSupportType.TST_STRUCT, PLUGIN_VERSION);
+        super(TYPE_NAME, enableKeySupport, null ,Thermometer.class,TypeSupportType.TST_STRUCT, PLUGIN_VERSION);
     }
 }
 

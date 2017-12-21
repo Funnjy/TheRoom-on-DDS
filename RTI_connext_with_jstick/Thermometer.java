@@ -16,14 +16,9 @@ import com.rti.dds.cdr.CdrHelper;
 
 public class Thermometer   implements Copyable, Serializable{
 
-    public int did= 0;
-    public String name=  "" ; /* maximum length = (128) */
-    public String model=  "" ; /* maximum length = (128) */
-    public String proto=  "" ; /* maximum length = (128) */
-    public String devicetype=  "" ; /* maximum length = (128) */
-    public int devicemethods= 0;
-    public String devicelastcmd=  "" ; /* maximum length = (128) */
-    public int devicelastval= 0;
+    public short id= 0;
+    public double long_data= 0;
+    public String string_data=  "" ; /* maximum length = (255) */
 
     public Thermometer() {
 
@@ -45,14 +40,9 @@ public class Thermometer   implements Copyable, Serializable{
 
     public void clear() {
 
-        did= 0;
-        name=  ""; 
-        model=  ""; 
-        proto=  ""; 
-        devicetype=  ""; 
-        devicemethods= 0;
-        devicelastcmd=  ""; 
-        devicelastval= 0;
+        id= 0;
+        long_data= 0;
+        string_data=  ""; 
     }
 
     public boolean equals(Object o) {
@@ -67,28 +57,13 @@ public class Thermometer   implements Copyable, Serializable{
 
         Thermometer otherObj = (Thermometer)o;
 
-        if(did != otherObj.did) {
+        if(id != otherObj.id) {
             return false;
         }
-        if(!name.equals(otherObj.name)) {
+        if(long_data != otherObj.long_data) {
             return false;
         }
-        if(!model.equals(otherObj.model)) {
-            return false;
-        }
-        if(!proto.equals(otherObj.proto)) {
-            return false;
-        }
-        if(!devicetype.equals(otherObj.devicetype)) {
-            return false;
-        }
-        if(devicemethods != otherObj.devicemethods) {
-            return false;
-        }
-        if(!devicelastcmd.equals(otherObj.devicelastcmd)) {
-            return false;
-        }
-        if(devicelastval != otherObj.devicelastval) {
+        if(!string_data.equals(otherObj.string_data)) {
             return false;
         }
 
@@ -97,14 +72,9 @@ public class Thermometer   implements Copyable, Serializable{
 
     public int hashCode() {
         int __result = 0;
-        __result += (int)did;
-        __result += name.hashCode(); 
-        __result += model.hashCode(); 
-        __result += proto.hashCode(); 
-        __result += devicetype.hashCode(); 
-        __result += (int)devicemethods;
-        __result += devicelastcmd.hashCode(); 
-        __result += (int)devicelastval;
+        __result += (int)id;
+        __result += (int)long_data;
+        __result += string_data.hashCode(); 
         return __result;
     }
 
@@ -127,14 +97,9 @@ public class Thermometer   implements Copyable, Serializable{
         Thermometer typedSrc = (Thermometer) src;
         Thermometer typedDst = this;
 
-        typedDst.did = typedSrc.did;
-        typedDst.name = typedSrc.name;
-        typedDst.model = typedSrc.model;
-        typedDst.proto = typedSrc.proto;
-        typedDst.devicetype = typedSrc.devicetype;
-        typedDst.devicemethods = typedSrc.devicemethods;
-        typedDst.devicelastcmd = typedSrc.devicelastcmd;
-        typedDst.devicelastval = typedSrc.devicelastval;
+        typedDst.id = typedSrc.id;
+        typedDst.long_data = typedSrc.long_data;
+        typedDst.string_data = typedSrc.string_data;
 
         return this;
     }
@@ -152,21 +117,11 @@ public class Thermometer   implements Copyable, Serializable{
         }
 
         CdrHelper.printIndent(strBuffer, indent+1);        
-        strBuffer.append("did: ").append(did).append("\n");  
+        strBuffer.append("id: ").append(id).append("\n");  
         CdrHelper.printIndent(strBuffer, indent+1);        
-        strBuffer.append("name: ").append(name).append("\n");  
+        strBuffer.append("long_data: ").append(long_data).append("\n");  
         CdrHelper.printIndent(strBuffer, indent+1);        
-        strBuffer.append("model: ").append(model).append("\n");  
-        CdrHelper.printIndent(strBuffer, indent+1);        
-        strBuffer.append("proto: ").append(proto).append("\n");  
-        CdrHelper.printIndent(strBuffer, indent+1);        
-        strBuffer.append("devicetype: ").append(devicetype).append("\n");  
-        CdrHelper.printIndent(strBuffer, indent+1);        
-        strBuffer.append("devicemethods: ").append(devicemethods).append("\n");  
-        CdrHelper.printIndent(strBuffer, indent+1);        
-        strBuffer.append("devicelastcmd: ").append(devicelastcmd).append("\n");  
-        CdrHelper.printIndent(strBuffer, indent+1);        
-        strBuffer.append("devicelastval: ").append(devicelastval).append("\n");  
+        strBuffer.append("string_data: ").append(string_data).append("\n");  
 
         return strBuffer.toString();
     }

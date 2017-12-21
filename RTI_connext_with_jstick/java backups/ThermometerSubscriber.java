@@ -1,6 +1,6 @@
 
 
-/* ThermometerPublisher.java
+/* ThermometerSubscriber.java
 
 A publication of data of type Thermometer
 
@@ -24,7 +24,7 @@ java ThermometerPublisher <domain_id> <sample_count>
 
 (4) [Optional] Specify the list of discovery initial peers and 
 multicast receive addresses via an environment variable or a file 
-(in the current working directory) called NDDS_DISCOVERY_PEERS.  
+(in the current working directory) called NDDS_DISCOVERY_PEERS. 
 
 You can run any number of publishers and subscribers programs, and can 
 add and remove them dynamically from the domain.
@@ -36,37 +36,33 @@ To run the example application on domain <domain_id>:
 Ensure that $(NDDSHOME)/lib/<arch> is on the dynamic library path for
 Java.                       
 
-On Unix: 
+On UNIX systems: 
 add $(NDDSHOME)/lib/<arch> to the 'LD_LIBRARY_PATH' environment
 variable
 
-On Windows:
+On Windows systems:
 add %NDDSHOME%\lib\<arch> to the 'Path' environment variable
 
 Run the Java applications:
 
-java -Djava.ext.dirs=$NDDSHOME/lib/java ThermometerPublisher <domain_id>
+java -Djava.ext.dirs=$NDDSHOME/class ThermometerPublisher <domain_id>
 
-java -Djava.ext.dirs=$NDDSHOME/lib/java ThermometerSubscriber <domain_id>        
+java -Djava.ext.dirs=$NDDSHOME/class ThermometerSubscriber <domain_id>  
 */
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.rti.dds.domain.*;
 import com.rti.dds.infrastructure.*;
-import com.rti.dds.publication.*;
+import com.rti.dds.subscription.*;
 import com.rti.dds.topic.*;
 import com.rti.ndds.config.*;
 
-import net.jstick.api.Sensor;
-import net.jstick.api.Tellstick;
-
 // ===========================================================================
 
-public class ThermometerPublisher {
+public class ThermometerSubscriber {
     // -----------------------------------------------------------------------
     // Public Methods
     // -----------------------------------------------------------------------
@@ -91,7 +87,7 @@ public class ThermometerPublisher {
         */
 
         // --- Run --- //
-        publisherMain(domainId, sampleCount);
+        subscriberMain(domainId, sampleCount);
     }
 
     // -----------------------------------------------------------------------
@@ -100,20 +96,22 @@ public class ThermometerPublisher {
 
     // --- Constructors: -----------------------------------------------------
 
-    private ThermometerPublisher() {
+    private ThermometerSubscriber() {
         super();
     }
 
     // -----------------------------------------------------------------------
 
-    private static void publisherMain(int domainId, int sampleCount) {
+    private static void subscriberMain(int domainId, int sampleCount) {
 
         DomainParticipant participant = null;
-        Publisher publisher = null;
+        Subscriber subscriber = null;
         Topic topic = null;
-        ThermometerDataWriter writer = null;
+        DataReaderListener listener = null;
+        ThermometerDataReader reader = null;
 
         try {
+
             // --- Create participant --- //
 
             /* To customize participant QoS, use
@@ -127,25 +125,25 @@ public class ThermometerPublisher {
             if (participant == null) {
                 System.err.println("create_participant error\n");
                 return;
-            }        
+            }                         
 
-            // --- Create publisher --- //
+            // --- Create subscriber --- //
 
-            /* To customize publisher QoS, use
+            /* To customize subscriber QoS, use
             the configuration file USER_QOS_PROFILES.xml */
 
-            publisher = participant.create_publisher(
-                DomainParticipant.PUBLISHER_QOS_DEFAULT, null /* listener */,
+            subscriber = participant.create_subscriber(
+                DomainParticipant.SUBSCRIBER_QOS_DEFAULT, null /* listener */,
                 StatusKind.STATUS_MASK_NONE);
-            if (publisher == null) {
-                System.err.println("create_publisher error\n");
+            if (subscriber == null) {
+                System.err.println("create_subscriber error\n");
                 return;
-            }                   
+            }     
 
             // --- Create topic --- //
 
             /* Register type before creating topic */
-            String typeName = ThermometerTypeSupport.get_type_name();
+            String typeName = ThermometerTypeSupport.get_type_name(); 
             ThermometerTypeSupport.register_type(participant, typeName);
 
             /* To customize topic QoS, use
@@ -158,65 +156,41 @@ public class ThermometerPublisher {
             if (topic == null) {
                 System.err.println("create_topic error\n");
                 return;
-            }           
+            }                     
 
-            // --- Create writer --- //
+            // --- Create reader --- //
 
-            /* To customize data writer QoS, use
+            listener = new ThermometerListener();
+
+            /* To customize data reader QoS, use
             the configuration file USER_QOS_PROFILES.xml */
 
-            writer = (ThermometerDataWriter)
-            publisher.create_datawriter(
-                topic, Publisher.DATAWRITER_QOS_DEFAULT,
-                null /* listener */, StatusKind.STATUS_MASK_NONE);
-            if (writer == null) {
-                System.err.println("create_datawriter error\n");
+            reader = (ThermometerDataReader)
+            subscriber.create_datareader(
+                topic, Subscriber.DATAREADER_QOS_DEFAULT, listener,
+                StatusKind.STATUS_MASK_ALL);
+            if (reader == null) {
+                System.err.println("create_datareader error\n");
                 return;
-            }           
+            }                         
 
-            // --- Write --- //
+            // --- Wait for data --- //
 
-            /* Create data sample for writing */
-            Thermometer instance = new Thermometer();
+            final long receivePeriodSec = 4;
 
-            InstanceHandle_t instance_handle = InstanceHandle_t.HANDLE_NIL;
-            /* For a data type that has a key, if the same instance is going to be
-            written multiple times, initialize the key here
-            and register the keyed instance prior to writing */
-            //instance_handle = writer.register_instance(instance);
+            for (int count = 0;
+            (sampleCount == 0) || (count < sampleCount);
+            ++count) {
+                System.out.println("Thermometer subscriber sleeping for "
+                + receivePeriodSec + " sec...");
 
-            final long sendPeriodMillis = 4 * 1000; // 4 seconds
-            Tellstick ts = new Tellstick(true);
-            ArrayList<Sensor> sensorList = ts.getSensors();
-            
-            for (int count = 0; (sampleCount == 0) || (count < sampleCount); ++count) {
-                System.out.println("Writing Thermometer, count " + count);
-                
-                /* Modify the instance to be written here */
-                for(Sensor s: (ArrayList<Sensor>) sensorList){
-                	System.out.println("Thermo informasjon: " + s.getId() + "; " + s.getTemperature() + "; " + s.getModel());
-                	instance.id = (short) s.getId();
-                	instance.long_data = s.getTemperature();
-                	instance.string_data = s.getModel();
-                	try {
-                        Thread.sleep(sendPeriodMillis);
-                    } catch (InterruptedException ix) {
-                        System.err.println("INTERRUPTED");
-                        break;
-                    }
-                }
-                /* Write data */
-               /* writer.write(instance, instance_handle);
                 try {
-                    Thread.sleep(sendPeriodMillis);
+                    Thread.sleep(receivePeriodSec * 1000);  // in millisec
                 } catch (InterruptedException ix) {
                     System.err.println("INTERRUPTED");
                     break;
-                }*/
+                }
             }
-
-            //writer.unregister_instance(instance, instance_handle);
-
         } finally {
 
             // --- Shutdown --- //
@@ -227,12 +201,52 @@ public class ThermometerPublisher {
                 DomainParticipantFactory.TheParticipantFactory.
                 delete_participant(participant);
             }
-            /* RTI Data Distribution Service provides finalize_instance()
-            method for people who want to release memory used by the
+            /* RTI Data Distribution Service provides the finalize_instance()
+            method for users who want to release memory used by the
             participant factory singleton. Uncomment the following block of
             code for clean destruction of the participant factory
             singleton. */
             //DomainParticipantFactory.finalize_instance();
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Private Types
+    // -----------------------------------------------------------------------
+
+    // =======================================================================
+
+    private static class ThermometerListener extends DataReaderAdapter {
+
+        ThermometerSeq _dataSeq = new ThermometerSeq();
+        SampleInfoSeq _infoSeq = new SampleInfoSeq();
+
+        public void on_data_available(DataReader reader) {
+            ThermometerDataReader ThermometerReader =
+            (ThermometerDataReader)reader;
+
+            try {
+                ThermometerReader.take(
+                    _dataSeq, _infoSeq,
+                    ResourceLimitsQosPolicy.LENGTH_UNLIMITED,
+                    SampleStateKind.ANY_SAMPLE_STATE,
+                    ViewStateKind.ANY_VIEW_STATE,
+                    InstanceStateKind.ANY_INSTANCE_STATE);
+
+                for(int i = 0; i < _dataSeq.size(); ++i) {
+                    SampleInfo info = (SampleInfo)_infoSeq.get(i);
+
+                    if (info.valid_data) {
+                        System.out.println(
+                            ((Thermometer)_dataSeq.get(i)).toString("Received",0));
+
+                    }
+                }
+            } catch (RETCODE_NO_DATA noData) {
+                // No data to process
+            } finally {
+                ThermometerReader.return_loan(_dataSeq, _infoSeq);
+            }
         }
     }
 }
