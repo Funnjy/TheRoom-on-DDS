@@ -186,33 +186,30 @@ public class ThermometerPublisher {
             //instance_handle = writer.register_instance(instance);
 
             final long sendPeriodMillis = 4 * 1000; // 4 seconds
+            
             Tellstick ts = new Tellstick(true);
             ArrayList<Sensor> sensorList = ts.getSensors();
             
             for (int count = 0; (sampleCount == 0) || (count < sampleCount); ++count) {
                 System.out.println("Writing Thermometer, count " + count);
-                
+
                 /* Modify the instance to be written here */
                 for(Sensor s: (ArrayList<Sensor>) sensorList){
                 	System.out.println("Thermo informasjon: " + s.getId() + "; " + s.getTemperature() + "; " + s.getModel());
                 	instance.id = (short) s.getId();
                 	instance.long_data = s.getTemperature();
                 	instance.string_data = s.getModel();
-                	try {
-                        Thread.sleep(sendPeriodMillis);
-                    } catch (InterruptedException ix) {
-                        System.err.println("INTERRUPTED");
-                        break;
-                    }
+                	writer.write(instance, instance_handle);
                 }
+                
                 /* Write data */
-               /* writer.write(instance, instance_handle);
+                
                 try {
                     Thread.sleep(sendPeriodMillis);
                 } catch (InterruptedException ix) {
                     System.err.println("INTERRUPTED");
                     break;
-                }*/
+                }
             }
 
             //writer.unregister_instance(instance, instance_handle);
